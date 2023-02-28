@@ -21,12 +21,20 @@ def call_api(keyword, start, display):
 
 
 def get_paging_call(keyword, quantity):
-    repeat = 9
-
+    if quantity > 1100:
+        exit("Error! 최대 요청할 수 있는 건수는 1100건 입니다.")
+    repeat = quantity // 100
+    result = list()
     for i in range(repeat):
-        print(f"{i + 1}번 반복 합니다.")
+        start = i * 100 + 1
+        if start > 1000:
+            start = 1000
+        print(f"{i + 1}번 반복 합니다. start: {start}")
+        r = call_api(keyword, start=start, display=100)
+        result += r["items"]
+    return result
 
 
 if __name__ == "__main__":
-    # r = call_api("교대역 병원", 1, 100)
-    r = get_paging_call("교대역 이비인후과", 900)
+    r = get_paging_call("강남역 파스타", 1100)
+    print(len(r))
