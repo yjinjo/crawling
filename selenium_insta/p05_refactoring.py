@@ -55,6 +55,18 @@ def search(hashtag: str, scroll_times: int):
         time.sleep(3)
 
 
+def like_comment(nth):
+    row = (nth - 1) // 3 + 1
+    col = (nth - 1) % 3 + 1
+    # nth Post 클릭
+    xpath = f"/html/body/div[2]/div/div/div[1]/div/div/div/div[1]/div[1]/div[2]/section/main/article/div[2]/div/div[{row}]/div[{col}]"
+    driver.find_element(By.XPATH, xpath).click()
+
+    # like
+    like_xpath = "/html/body/div[2]/div/div/div[2]/div/div/div[1]/div/div[3]/div/div/div/div/div[2]/div/article/div/div[2]/div/div/div[2]/section[1]/span[1]/button"
+    driver.find_element(By.XPATH, like_xpath).click()
+
+
 # Login
 instagram_id = os.environ.get("INSTAGRAM_ID")
 instagram_pw = os.environ.get("INSTAGRAM_PW")
@@ -62,6 +74,9 @@ login(instagram_id, instagram_pw)
 
 # Search
 hashtag = "강아지"
-search(hashtag, 2)
+search(hashtag=hashtag, scroll_times=1)
+
+# Like Comment
+like_comment(nth=4)
 
 time.sleep(100)
