@@ -8,6 +8,7 @@ from selenium.webdriver import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait as wait
+import multiprocessing
 
 load_dotenv()
 
@@ -19,7 +20,7 @@ chromedriver_autoinstaller.install()
 driver = webdriver.Chrome()
 
 # 인스타 같은 경우는 로딩이 그렇게 빠르지 않기 때문에 3초 정도 기다렸다가 불러오는 것으로 설정
-driver.implicitly_wait(3)
+driver.implicitly_wait(5)
 
 url = "https://www.instagram.com/"
 driver.get(url=url)
@@ -55,28 +56,45 @@ def search(hashtag: str, scroll_times: int):
         time.sleep(3)
 
 
-def like_comment(nth):
+def like_comment(nth, comment, repeat=3):
     row = (nth - 1) // 3 + 1
     col = (nth - 1) % 3 + 1
     # nth Post 클릭
     xpath = f"/html/body/div[2]/div/div/div[1]/div/div/div/div[1]/div[1]/div[2]/section/main/article/div[2]/div/div[{row}]/div[{col}]"
     driver.find_element(By.XPATH, xpath).click()
 
-    # like
-    like_xpath = "/html/body/div[2]/div/div/div[2]/div/div/div[1]/div/div[3]/div/div/div/div/div[2]/div/article/div/div[2]/div/div/div[2]/section[1]/span[1]/button"
-    driver.find_element(By.XPATH, like_xpath).click()
+    for _ in range(repeat):
+        # like
+        like_xpath = "/html/body/div[2]/div/div/div[2]/div/div/div[1]/div/div[3]/div/div/div/div/div[2]/div/article/div/div[2]/div/div/div[2]/section[1]/span[1]/button"
+        driver.find_element(By.XPATH, like_xpath).click()
+
+        # comment
+        comment_xpath = "/html/body/div[2]/div/div/div[2]/div/div/div[1]/div/div[3]/div/div/div/div/div[2]/div/article/div/div[2]/div/div/div[2]/section[3]/div/form/div/textarea"
+        driver.find_element(By.XPATH, comment_xpath).click()
+        driver.find_element(By.XPATH, comment_xpath).send_keys(comment)
+
+        # 게시 버튼 누르기
+        comment_button_xpath = "/html/body/div[2]/div/div/div[2]/div/div/div[1]/div/div[3]/div/div/div/div/div[2]/div/article/div/div[2]/div/div/div[2]/section[3]/div/form/div/div[2]"
+        driver.find_element(By.XPATH, comment_button_xpath).click()
+
+        # 다음 게시물 선택
+        next_button_xpath = "/html/body/div[2]/div/div/div[2]/div/div/div[1]/div/div[3]/div/div/div/div/div[1]/div/div/div[2]/button"
+        driver.find_element(By.XPATH, next_button_xpath).click()
 
 
-# Login
-instagram_id = os.environ.get("INSTAGRAM_ID")
-instagram_pw = os.environ.get("INSTAGRAM_PW")
-login(instagram_id, instagram_pw)
+if __name__ == "__main__":
+    processes = []
 
-# Search
-hashtag = "강아지"
-search(hashtag=hashtag, scroll_times=1)
+    # Login
+    instagram_id = os.environ.get("INSTAGRAM_ID")
+    instagram_pw = os.environ.get("INSTAGRAM_PW")
+    login(instagram_id, instagram_pw)
 
-# Like Comment
-like_comment(nth=4)
+    # Search
+    hashtag = "강아지"
+    search(hashtag=hashtag, scroll_times=0)
 
-time.sleep(100)
+    # Like Comment
+    like_comment(4, "강아지가 귀엽네요", 2)
+
+    time.sleep(100)
